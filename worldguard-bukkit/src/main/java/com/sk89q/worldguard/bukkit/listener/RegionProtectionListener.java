@@ -41,16 +41,19 @@ import com.sk89q.worldguard.bukkit.util.InteropUtils;
 import com.sk89q.worldguard.bukkit.util.Materials;
 import com.sk89q.worldguard.commands.CommandUtils;
 import com.sk89q.worldguard.config.WorldConfiguration;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.association.RegionAssociable;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
@@ -68,6 +71,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerTakeLecternBookEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -228,7 +232,13 @@ public class RegionProtectionListener extends AbstractListener {
 
                 /* Everything else */
                 } else {
-                    canBreak = query.testBuild(BukkitAdapter.adapt(target), associable, combine(event, Flags.BLOCK_BREAK));
+                    List<Block> blocks = event.getBlocks();
+                    if (blocks.size() == 1) {
+                        canBreak = magicTestBuild(query, BukkitAdapter.adapt(target), associable, blocks.getFirst().getBlockData());
+                    } else {
+                        canBreak = query.testBuild(BukkitAdapter.adapt(target), associable, combine(event, Flags.BLOCK_BREAK));
+                    }
+
                     what = "break that block";
                 }
 
@@ -240,6 +250,25 @@ public class RegionProtectionListener extends AbstractListener {
                 return true;
             });
         }
+    }
+
+    public boolean magicTestBuild(RegionQuery query, com.sk89q.worldedit.util.Location location, RegionAssociable associable, BlockData blockData) {
+        return StateFlag.test(StateFlag.combine(
+                StateFlag.denyToNone(query.queryState(location, associable, Flags.BUILD)),
+                magicQueryState(query, location, associable, blockData)));
+    }
+
+    @Nullable
+    public State magicQueryState(RegionQuery query, com.sk89q.worldedit.util.Location location, @Nullable RegionAssociable associable, BlockData blockData) {
+        ApplicableRegionSet applicableRegions = query.getApplicableRegions(location);
+        String stateString = blockData.getAsString();
+        for (ProtectedRegion region : applicableRegions) {
+            boolean contains = region.blockStates().contains(stateString);
+            if (contains) {
+                return State.ALLOW;
+            }
+        }
+        return applicableRegions.queryState(associable, Flags.BLOCK_BREAK);
     }
 
     @EventHandler(ignoreCancelled = true)

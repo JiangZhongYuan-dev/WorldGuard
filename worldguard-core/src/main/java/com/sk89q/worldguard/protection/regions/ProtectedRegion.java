@@ -22,8 +22,10 @@ package com.sk89q.worldguard.protection.regions;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sk89q.worldedit.math.BlockVector2;
 import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.domains.DefaultDomain;
 import com.sk89q.worldguard.protection.flags.Flag;
@@ -35,6 +37,7 @@ import java.awt.geom.Line2D;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
@@ -66,6 +69,7 @@ public abstract class ProtectedRegion implements ChangeTracked, Comparable<Prote
     private DefaultDomain owners = new DefaultDomain();
     private DefaultDomain members = new DefaultDomain();
     private ConcurrentMap<Flag<?>, Object> flags = new ConcurrentHashMap<>();
+    private Set<String> blockStates = Set.of();
     private boolean dirty = true;
 
     /**
@@ -262,6 +266,14 @@ public abstract class ProtectedRegion implements ChangeTracked, Comparable<Prote
         checkNotNull(members);
         setDirty(true);
         this.members = new DefaultDomain(members);
+    }
+
+    public Set<String> blockStates() {
+        return blockStates;
+    }
+
+    public void setBlockStates(Set<String> blockStates) {
+        this.blockStates = blockStates;
     }
 
     /**
