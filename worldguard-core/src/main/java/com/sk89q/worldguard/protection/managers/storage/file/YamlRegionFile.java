@@ -169,6 +169,7 @@ public class YamlRegionFile implements RegionDatabase {
                 setFlags(flagRegistry, region, node.getNode("flags"));
                 region.setOwners(parseDomain(node.getNode("owners")));
                 region.setMembers(parseDomain(node.getNode("members")));
+                region.setBlockStates(new HashSet<>(node.getStringList("allow-breaking", List.of())));
 
                 loaded.put(id, region);
 
