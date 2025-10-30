@@ -87,11 +87,8 @@ import org.bukkit.entity.Tameable;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.WindCharge;
 import org.bukkit.entity.minecart.HopperMinecart;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
+import org.bukkit.event.*;
 import org.bukkit.event.Event.Result;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
@@ -202,7 +199,7 @@ public class EventAbstractionListener extends AbstractListener {
     // Block break / place
     //-------------------------------------------------------------------------
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onBlockBreak(BlockBreakEvent event) {
         Events.fireToCancel(event, new BreakBlockEvent(event, create(event.getPlayer()), event.getBlock()));
 
