@@ -237,6 +237,7 @@ public class YamlRegionFile implements RegionDatabase {
             node.setProperty("flags", getFlagData(region));
             node.setProperty("owners", getDomainData(region.getOwners()));
             node.setProperty("members", getDomainData(region.getMembers()));
+            node.setProperty("allow-breaking", new ArrayList<>(region.blockStates()));
 
             ProtectedRegion parent = region.getParent();
             if (parent != null) {
