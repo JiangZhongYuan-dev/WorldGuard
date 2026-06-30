@@ -558,6 +558,15 @@ public class WorldGuardPlugin extends JavaPlugin {
     }
 
     private final LazyReference<Boolean> folia = LazyReference.from(() -> {
+        // Brand-independent detection first: works on any Folia fork (e.g. custom builds
+        // that don't report a "papermc:folia" compatible brand).
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException ignored) {
+            // Not Folia, fall through to the brand-based check.
+        }
+
         try {
             // Folia is Paper-based, so this is a good first check.
             if (PaperLib.isPaper()) {
